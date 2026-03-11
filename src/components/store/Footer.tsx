@@ -12,7 +12,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-center md:text-left">
             <h3 className="font-display text-lg font-bold neon-text">{settings.storeName}</h3>
-            <p className="text-muted-foreground font-body text-sm mt-1">Tu tienda de moda online</p>
+            <p className="text-muted-foreground font-body text-sm mt-1">Moda urbana con estilo</p>
           </div>
 
           <div className="flex items-center gap-5">
@@ -33,9 +33,14 @@ const Footer = () => {
             )}
           </div>
 
-          <p className="text-muted-foreground font-body text-xs">
-            © {new Date().getFullYear()} {settings.storeName}. Todos los derechos reservados.
-          </p>
+          <div className="text-center md:text-right space-y-1">
+            <p className="text-muted-foreground font-body text-xs">
+              Envío Bogotá: ${settings.shippingCost.toLocaleString("es-CO")} COP
+            </p>
+            <p className="text-muted-foreground font-body text-xs">
+              © {new Date().getFullYear()} {settings.storeName}. Todos los derechos reservados.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

@@ -34,7 +34,7 @@ const defaultSettings: StoreSettings = {
   bannerText: "¡Envío a Bogotá por solo $9.000 COP!",
 };
 
-const ADMIN_PASSWORD = "simiro2024";
+const ADMIN_PASSWORD = "SIMIROSTORE2026";
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
