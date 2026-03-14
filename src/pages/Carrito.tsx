@@ -88,6 +88,10 @@ const Carrito = () => {
                 <span className="text-primary">{formatPrice(cartTotal)}</span>
               </div>
 
+              <p className="text-muted-foreground font-body text-sm text-center pt-1">
+                La compra, el pago y el envío se coordinan por WhatsApp.
+              </p>
+
               <button
                 onClick={handleWhatsAppCheckout}
                 className="w-full gradient-neon text-primary-foreground font-body font-semibold py-3 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity mt-4"
