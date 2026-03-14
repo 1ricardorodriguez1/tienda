@@ -65,10 +65,30 @@ Los productos y la configuración ya no se almacenan únicamente en `localStorag
    );
    insert into settings (id) values ('default') on conflict do nothing;
    ```
-3. Asegúrate de que las variables de entorno `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` estén definidas en tu `.env` (se usan como fallback en `supabaseClient.ts`).
+
+3. **Importante – políticas RLS:** Sin esto, los clientes no ven productos (el catálogo queda vacío). En la misma pestaña **SQL** de Supabase ejecuta también:
+   ```sql
+   -- Permitir que cualquiera (incluidos clientes anónimos) pueda LEER productos y configuración
+   alter table products enable row level security;
+   alter table settings enable row level security;
+
+   create policy "Permitir leer productos" on products for select using (true);
+   create policy "Permitir crear productos" on products for insert with check (true);
+   create policy "Permitir actualizar productos" on products for update using (true);
+   create policy "Permitir borrar productos" on products for delete using (true);
+
+   create policy "Permitir leer settings" on settings for select using (true);
+   create policy "Permitir insertar settings" on settings for insert with check (true);
+   create policy "Permitir actualizar settings" on settings for update using (true);
+   ```
+   Así la web (Vercel y local) puede leer y escribir en `products` y `settings` con la clave anónima.
+
+4. Asegúrate de que las variables de entorno `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` estén definidas en Vercel (y en tu `.env` local).
 
 Desde la aplicación, los métodos `addProduct`, `updateProduct`, `deleteProduct` y `updateSettings` se comunicarán con Supabase; al cargar la tienda se hace un `select` automático.
 
 > 📦 **Nota:** la base de datos es compartida, así que cualquier cambio que hagas en la consola (o desde Admin) se reflejará para todos los visitantes de la web sin recargar.
 
 Con este backend ya tienes almacenamiento real y la tienda funciona en múltiples dispositivos a la vez.
+
+**Si el catálogo sigue vacío en la web:** Entra en Supabase → **Database** → **Replication** (o **Realtime**) y asegúrate de que la publicación incluye la tabla `products`, o que Realtime está activado para esa tabla. Sobre todo, repasa el paso 3 anterior: sin las políticas RLS, los clientes no pueden leer los productos.
