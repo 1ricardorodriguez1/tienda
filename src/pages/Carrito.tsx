@@ -15,9 +15,11 @@ const Carrito = () => {
     ).join("\n");
 
     const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-    const message = `🛒 *Pedido Simiro Store*\n\n${items}\n\n📦 Subtotal: ${formatPrice(subtotal)}\n🚚 Envío Bogotá: ${formatPrice(settings.shippingCost)}\n💰 *Total: ${formatPrice(cartTotal)}*\n\n¡Quiero comprar esto con envío a Bogotá! 🙏`;
+    const shipping = Number(settings.shippingCost) || 0;
+    const message = `🛒 *Pedido Simiro Store*\n\n${items}\n\n📦 Subtotal: ${formatPrice(subtotal)}\n🚚 Envío Bogotá: ${formatPrice(shipping)}\n💰 *Total: ${formatPrice(cartTotal)}*\n\n¡Quiero comprar esto con envío a Bogotá! 🙏`;
 
-    const phone = settings.whatsappNumber.replace(/[^0-9]/g, "");
+    const phone = settings.whatsappNumber != null ? String(settings.whatsappNumber).replace(/[^0-9]/g, "") : "";
+    if (!phone) return;
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
   };
@@ -75,11 +77,11 @@ const Carrito = () => {
             <div className="glass-card rounded-lg p-6 mt-6 space-y-3">
               <div className="flex justify-between font-body text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>{formatPrice(cartTotal - settings.shippingCost)}</span>
+                <span>{formatPrice(cartTotal - (Number(settings.shippingCost) || 0))}</span>
               </div>
               <div className="flex justify-between font-body text-sm">
                 <span className="text-muted-foreground">Envío Bogotá</span>
-                <span>{formatPrice(settings.shippingCost)}</span>
+                <span>{formatPrice(Number(settings.shippingCost) || 0)}</span>
               </div>
               <div className="border-t border-border pt-3 flex justify-between font-body font-bold text-lg">
                 <span>Total</span>

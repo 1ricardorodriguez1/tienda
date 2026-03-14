@@ -23,15 +23,15 @@ const Admin = () => {
   const [featured, setFeatured] = useState(false);
 
   // Settings form state
-  const [sWhatsapp, setSWhatsapp] = useState(settings.whatsappNumber);
-  const [sInstagram, setSInstagram] = useState(settings.instagramUrl);
-  const [sFacebook, setSFacebook] = useState(settings.facebookUrl);
-  const [sShipping, setSShipping] = useState(String(settings.shippingCost));
-  const [sStoreName, setSStoreName] = useState(settings.storeName);
-  const [sHeroTitle, setSHeroTitle] = useState(settings.heroTitle);
-  const [sHeroSubtitle, setSHeroSubtitle] = useState(settings.heroSubtitle);
-  const [sBgImage, setSBgImage] = useState(settings.backgroundImage);
-  const [sBannerText, setSBannerText] = useState(settings.bannerText);
+  const [sWhatsapp, setSWhatsapp] = useState(settings.whatsappNumber ?? "");
+  const [sInstagram, setSInstagram] = useState(settings.instagramUrl ?? "");
+  const [sFacebook, setSFacebook] = useState(settings.facebookUrl ?? "");
+  const [sShipping, setSShipping] = useState(String(settings.shippingCost ?? 0));
+  const [sStoreName, setSStoreName] = useState(settings.storeName ?? "");
+  const [sHeroTitle, setSHeroTitle] = useState(settings.heroTitle ?? "");
+  const [sHeroSubtitle, setSHeroSubtitle] = useState(settings.heroSubtitle ?? "");
+  const [sBgImage, setSBgImage] = useState(settings.backgroundImage ?? "");
+  const [sBannerText, setSBannerText] = useState(settings.bannerText ?? "");
 
   if (!isAdmin) return <Navigate to="/login" replace />;
 

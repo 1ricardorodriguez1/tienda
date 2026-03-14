@@ -19,7 +19,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-3">
           <img src={simiroLogo} alt="Simiro Store" className="h-10 w-10 rounded-full object-cover" />
-          <span className="font-display text-xl font-bold neon-text">{settings.storeName}</span>
+          <span className="font-display text-xl font-bold neon-text">{settings.storeName ?? "Simiro Store"}</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-6 font-body text-sm">

@@ -72,7 +72,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .limit(1)
       .single();
     if (!error && data) {
-      setSettings(prev => ({ ...prev, ...(data as StoreSettings) }));
+      const raw = data as Record<string, unknown>;
+      const merged = Object.fromEntries(
+        Object.entries(raw).filter(([, v]) => v != null)
+      ) as Partial<StoreSettings>;
+      setSettings(prev => ({ ...prev, ...merged }));
     }
   }, []);
 
@@ -208,7 +212,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const clearCart = useCallback(() => setCart([]), []);
 
-  const cartTotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0) + (cart.length > 0 ? settings.shippingCost : 0);
+  const cartTotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0) + (cart.length > 0 ? (Number(settings.shippingCost) || 0) : 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const login = useCallback((password: string) => {
