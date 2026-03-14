@@ -1,14 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { Product, CartItem, StoreSettings } from "@/types/store";
+import { supabase } from "@/lib/supabaseClient"; // backend client
 
 interface StoreContextType {
   products: Product[];
   cart: CartItem[];
   settings: StoreSettings;
   isAdmin: boolean;
-  addProduct: (product: Omit<Product, "id" | "createdAt">) => void;
-  updateProduct: (id: string, product: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
+  addProduct: (product: Omit<Product, "id" | "createdAt">) => Promise<void>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
   addToCart: (item: CartItem) => void;
   removeFromCart: (productId: string, size: string, color: string) => void;
   updateCartQuantity: (productId: string, size: string, color: string, qty: number) => void;
@@ -17,7 +18,7 @@ interface StoreContextType {
   cartCount: number;
   login: (password: string) => boolean;
   logout: () => void;
-  updateSettings: (settings: Partial<StoreSettings>) => void;
+  updateSettings: (settings: Partial<StoreSettings>) => Promise<void>;
 }
 
 const defaultSettings: StoreSettings = {
@@ -53,20 +54,134 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [settings, setSettings] = useState<StoreSettings>(() => loadFromStorage("simiro_settings", defaultSettings));
   const [isAdmin, setIsAdmin] = useState(() => loadFromStorage("simiro_admin", false));
 
+  // load data from Supabase on mount
+  const fetchProducts = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("createdAt", { ascending: false });
+    if (!error && data) {
+      setProducts(data as Product[]);
+    }
+  }, []);
+
+  const fetchSettings = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("settings")
+      .select("*")
+      .limit(1)
+      .single();
+    if (!error && data) {
+      setSettings(prev => ({ ...prev, ...(data as StoreSettings) }));
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+    fetchSettings();
+  }, [fetchProducts, fetchSettings]);
+
+  // Realtime updates from Supabase so that when el admin agrega/edita/borra
+  // productos en otro dispositivo, todos los clientes ven los cambios sin recargar.
+  useEffect(() => {
+    const channel = supabase
+      .channel("public:products")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
+        payload => {
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+            const next = payload.new as Product;
+            setProducts(prev => {
+              const without = prev.filter(p => p.id !== next.id);
+              return [next, ...without];
+            });
+          }
+          if (payload.eventType === "DELETE") {
+            const oldRow = payload.old as { id: string };
+            setProducts(prev => prev.filter(p => p.id !== oldRow.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // listen for storage events so that products/settings are updated
+  // if another tab (or window) modifies localStorage. This only works
+  // between tabs/windows in the same browser; it does **not** synchronise
+  // between different devices. For true multi‑user support a backend
+  // service is required.
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "simiro_products") {
+        try {
+          setProducts(e.newValue ? JSON.parse(e.newValue) : []);
+        } catch {
+          // ignore malformed data
+        }
+      }
+      if (e.key === "simiro_settings") {
+        try {
+          setSettings(e.newValue ? JSON.parse(e.newValue) : defaultSettings);
+        } catch {}
+      }
+      if (e.key === "simiro_admin") {
+        setIsAdmin(e.newValue === "true");
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   useEffect(() => { localStorage.setItem("simiro_products", JSON.stringify(products)); }, [products]);
   useEffect(() => { localStorage.setItem("simiro_settings", JSON.stringify(settings)); }, [settings]);
   useEffect(() => { localStorage.setItem("simiro_admin", JSON.stringify(isAdmin)); }, [isAdmin]);
 
-  const addProduct = useCallback((product: Omit<Product, "id" | "createdAt">) => {
-    const newProduct: Product = { ...product, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
-    setProducts(prev => [newProduct, ...prev]);
+  const addProduct = useCallback(async (product: Omit<Product, "id" | "createdAt">) => {
+    // send to Supabase and then update local state with returned row
+    const { data, error } = await supabase
+      .from("products")
+      .insert({ ...product, createdAt: new Date().toISOString() })
+      .select("*")
+      .single();
+    if (error) {
+      console.error("failed to add product", error);
+      return;
+    }
+    if (data) {
+      setProducts(prev => [data as Product, ...prev]);
+    }
   }, []);
 
-  const updateProduct = useCallback((id: string, updates: Partial<Product>) => {
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+  const updateProduct = useCallback(async (id: string, updates: Partial<Product>) => {
+    const { data, error } = await supabase
+      .from("products")
+      .update(updates)
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error) {
+      console.error("failed to update product", error);
+      return;
+    }
+    if (data) {
+      setProducts(prev => prev.map(p => (p.id === id ? (data as Product) : p)));
+    }
   }, []);
 
-  const deleteProduct = useCallback((id: string) => {
+  const deleteProduct = useCallback(async (id: string) => {
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      console.error("failed to delete product", error);
+      return;
+    }
     setProducts(prev => prev.filter(p => p.id !== id));
   }, []);
 
@@ -101,8 +216,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const logout = useCallback(() => setIsAdmin(false), []);
 
-  const updateSettings = useCallback((updates: Partial<StoreSettings>) => {
+  const updateSettings = useCallback(async (updates: Partial<StoreSettings>) => {
+    // local update first for responsiveness
     setSettings(prev => ({ ...prev, ...updates }));
+    const payload = { id: "default", ...updates };
+    const { error } = await supabase
+      .from("settings")
+      .upsert(payload, { onConflict: "id" });
+    if (error) {
+      console.error("settings save failed", error);
+    }
   }, []);
 
   return (

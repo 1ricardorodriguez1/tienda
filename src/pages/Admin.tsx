@@ -46,7 +46,7 @@ const Admin = () => {
     setEditingId(p.id); setShowForm(true);
   };
 
-  const handleSubmitProduct = (e: React.FormEvent) => {
+  const handleSubmitProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const data = {
       name, price: Number(price), description, images,
@@ -54,12 +54,16 @@ const Admin = () => {
       colors: colors.split(",").map(c => c.trim()).filter(Boolean),
       category, featured,
     };
-    if (editingId) { updateProduct(editingId, data); } else { addProduct(data); }
+    if (editingId) {
+      await updateProduct(editingId, data);
+    } else {
+      await addProduct(data);
+    }
     resetForm();
   };
 
-  const handleSaveSettings = () => {
-    updateSettings({
+  const handleSaveSettings = async () => {
+    await updateSettings({
       whatsappNumber: sWhatsapp, instagramUrl: sInstagram, facebookUrl: sFacebook,
       shippingCost: Number(sShipping), storeName: sStoreName, heroTitle: sHeroTitle,
       heroSubtitle: sHeroSubtitle, backgroundImage: sBgImage, bannerText: sBannerText,
