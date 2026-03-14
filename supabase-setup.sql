@@ -34,6 +34,10 @@ CREATE TABLE IF NOT EXISTS settings (
 
 INSERT INTO settings (id) VALUES ('default') ON CONFLICT (id) DO NOTHING;
 
+-- Columnas opcionales para filtro de catálogo y estilo de fondo (si ya tienes la tabla, ejecuta solo esto)
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS "filterCategories" text;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS "backgroundStyle" text;
+
 -- 2) Activar RLS y políticas para que los clientes vean el catálogo
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;

@@ -30,4 +30,8 @@ export interface StoreSettings {
   backgroundColor: string;
   accentColor: string;
   bannerText: string;
+  /** Categorías del filtro en catálogo, separadas por coma (ej. Chaqueta,Buso,Pantalones,Sacos) */
+  filterCategories?: string;
+  /** Estilo de fondo: "solid" | "gradient" */
+  backgroundStyle?: string;
 }

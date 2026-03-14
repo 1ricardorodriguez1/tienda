@@ -32,6 +32,10 @@ const Admin = () => {
   const [sHeroSubtitle, setSHeroSubtitle] = useState(settings.heroSubtitle ?? "");
   const [sBgImage, setSBgImage] = useState(settings.backgroundImage ?? "");
   const [sBannerText, setSBannerText] = useState(settings.bannerText ?? "");
+  const [sFilterCategories, setSFilterCategories] = useState(settings.filterCategories ?? "Chaqueta,Buso,Pantalones,Sacos");
+  const [sBackgroundColor, setSBackgroundColor] = useState(settings.backgroundColor ?? "#0a0a0a");
+  const [sBackgroundStyle, setSBackgroundStyle] = useState(settings.backgroundStyle ?? "solid");
+  const [sAccentColor, setSAccentColor] = useState(settings.accentColor ?? "#ec4899");
 
   if (!isAdmin) return <Navigate to="/login" replace />;
 
@@ -69,6 +73,7 @@ const Admin = () => {
       whatsappNumber: sWhatsapp, instagramUrl: sInstagram, facebookUrl: sFacebook,
       shippingCost: Number(sShipping), storeName: sStoreName, heroTitle: sHeroTitle,
       heroSubtitle: sHeroSubtitle, backgroundImage: sBgImage, bannerText: sBannerText,
+      filterCategories: sFilterCategories, backgroundColor: sBackgroundColor, backgroundStyle: sBackgroundStyle, accentColor: sAccentColor,
     });
   };
 
@@ -215,6 +220,38 @@ const Admin = () => {
               <label className="font-body text-sm font-semibold mb-1 block">Imagen de Fondo (URL)</label>
               <input value={sBgImage} onChange={e => setSBgImage(e.target.value)} placeholder="https://..." className="w-full bg-input border border-border rounded-lg px-3 py-2 font-body text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
             </div>
+
+            <div>
+              <label className="font-body text-sm font-semibold mb-1 block">Categorías del filtro (catálogo)</label>
+              <input value={sFilterCategories} onChange={e => setSFilterCategories(e.target.value)} placeholder="Chaqueta, Buso, Pantalones, Sacos" className="w-full bg-input border border-border rounded-lg px-3 py-2 font-body text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+              <p className="text-muted-foreground font-body text-xs mt-1">Separar con coma. Los clientes verán estos botones para filtrar.</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="font-body text-sm font-semibold mb-1 block">Color de fondo</label>
+                <div className="flex gap-2">
+                  <input type="color" value={sBackgroundColor} onChange={e => setSBackgroundColor(e.target.value)} className="h-10 w-14 rounded border border-border cursor-pointer bg-input" />
+                  <input type="text" value={sBackgroundColor} onChange={e => setSBackgroundColor(e.target.value)} placeholder="#0a0a0a" className="flex-1 bg-input border border-border rounded-lg px-3 py-2 font-body text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+              </div>
+              <div>
+                <label className="font-body text-sm font-semibold mb-1 block">Estilo de fondo</label>
+                <select value={sBackgroundStyle} onChange={e => setSBackgroundStyle(e.target.value)} className="w-full bg-input border border-border rounded-lg px-3 py-2 font-body text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+                  <option value="solid">Sólido</option>
+                  <option value="gradient">Degradado (con color de acento)</option>
+                </select>
+              </div>
+            </div>
+            {sBackgroundStyle === "gradient" && (
+              <div>
+                <label className="font-body text-sm font-semibold mb-1 block">Color de acento (degradado)</label>
+                <div className="flex gap-2">
+                  <input type="color" value={sAccentColor} onChange={e => setSAccentColor(e.target.value)} className="h-10 w-14 rounded border border-border cursor-pointer bg-input" />
+                  <input type="text" value={sAccentColor} onChange={e => setSAccentColor(e.target.value)} placeholder="#ec4899" className="flex-1 bg-input border border-border rounded-lg px-3 py-2 font-body text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                </div>
+              </div>
+            )}
 
             <button onClick={handleSaveSettings} className="gradient-neon text-primary-foreground font-body font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2">
               <Save size={16} /> Guardar Configuración

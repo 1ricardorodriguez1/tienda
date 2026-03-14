@@ -23,16 +23,18 @@ interface StoreContextType {
 
 const defaultSettings: StoreSettings = {
   whatsappNumber: "+573215067520",
-  instagramUrl: "",
-  facebookUrl: "",
+  instagramUrl: "https://www.instagram.com/simiro_store/",
+  facebookUrl: "https://www.facebook.com/profile.php?id=100066846246237",
   shippingCost: 9000,
   storeName: "Simiro Store",
   heroTitle: "Estilo que define tu esencia",
   heroSubtitle: "Descubre la nueva colección exclusiva",
   backgroundImage: "",
-  backgroundColor: "",
-  accentColor: "",
+  backgroundColor: "#0a0a0a",
+  accentColor: "#ec4899",
   bannerText: "¡Envío a Bogotá por solo $9.000 COP!",
+  filterCategories: "Chaqueta,Buso,Pantalones,Sacos",
+  backgroundStyle: "solid",
 };
 
 const ADMIN_PASSWORD = "SIMIROSTORE2026";

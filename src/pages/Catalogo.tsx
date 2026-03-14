@@ -8,12 +8,18 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 
 const Catalogo = () => {
-  const { products } = useStore();
+  const { products, settings } = useStore();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todos");
 
-  const categories = ["Todos", ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
+  const categoriesFromSettings = (settings.filterCategories ?? "")
+    .split(",")
+    .map(c => c.trim())
+    .filter(Boolean);
+  const categories = categoriesFromSettings.length > 0
+    ? ["Todos", ...categoriesFromSettings]
+    : ["Todos", ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
   const filtered = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = category === "Todos" || p.category === category;

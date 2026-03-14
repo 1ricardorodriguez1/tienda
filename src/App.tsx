@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { StoreProvider } from "@/context/StoreContext";
+import ThemeFromSettings from "@/components/ThemeFromSettings";
 import Index from "./pages/Index.tsx";
 import Catalogo from "./pages/Catalogo.tsx";
 import Carrito from "./pages/Carrito.tsx";
@@ -17,6 +18,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <StoreProvider>
+        <ThemeFromSettings />
         <Toaster />
         <Sonner />
         <BrowserRouter>
