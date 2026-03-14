@@ -54,10 +54,12 @@ const Admin = () => {
       colors: colors.split(",").map(c => c.trim()).filter(Boolean),
       category, featured,
     };
-    if (editingId) {
-      await updateProduct(editingId, data);
-    } else {
-      await addProduct(data);
+    const result = editingId
+      ? await updateProduct(editingId, data)
+      : await addProduct(data);
+    if (!result.ok) {
+      alert("No se pudo guardar en la base de datos.\n\nRevisa que en Vercel estén bien configuradas VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY (Supabase → Settings → API) y que hayas hecho Redeploy.\n\nError: " + (result.error ?? ""));
+      return;
     }
     resetForm();
   };

@@ -7,9 +7,9 @@ interface StoreContextType {
   cart: CartItem[];
   settings: StoreSettings;
   isAdmin: boolean;
-  addProduct: (product: Omit<Product, "id" | "createdAt">) => Promise<void>;
-  updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
-  deleteProduct: (id: string) => Promise<void>;
+  addProduct: (product: Omit<Product, "id" | "createdAt">) => Promise<{ ok: boolean; error?: string }>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<{ ok: boolean; error?: string }>;
+  deleteProduct: (id: string) => Promise<{ ok: boolean; error?: string }>;
   addToCart: (item: CartItem) => void;
   removeFromCart: (productId: string, size: string, color: string) => void;
   updateCartQuantity: (productId: string, size: string, color: string, qty: number) => void;
@@ -142,7 +142,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => { localStorage.setItem("simiro_admin", JSON.stringify(isAdmin)); }, [isAdmin]);
 
   const addProduct = useCallback(async (product: Omit<Product, "id" | "createdAt">) => {
-    // send to Supabase and then update local state with returned row
     const { data, error } = await supabase
       .from("products")
       .insert({ ...product, createdAt: new Date().toISOString() })
@@ -150,11 +149,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .single();
     if (error) {
       console.error("failed to add product", error);
-      return;
+      return { ok: false, error: error.message };
     }
     if (data) {
       setProducts(prev => [data as Product, ...prev]);
     }
+    return { ok: true };
   }, []);
 
   const updateProduct = useCallback(async (id: string, updates: Partial<Product>) => {
@@ -166,11 +166,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .single();
     if (error) {
       console.error("failed to update product", error);
-      return;
+      return { ok: false, error: error.message };
     }
     if (data) {
       setProducts(prev => prev.map(p => (p.id === id ? (data as Product) : p)));
     }
+    return { ok: true };
   }, []);
 
   const deleteProduct = useCallback(async (id: string) => {
@@ -180,9 +181,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .eq("id", id);
     if (error) {
       console.error("failed to delete product", error);
-      return;
+      return { ok: false, error: error.message };
     }
     setProducts(prev => prev.filter(p => p.id !== id));
+    return { ok: true };
   }, []);
 
   const addToCart = useCallback((item: CartItem) => {

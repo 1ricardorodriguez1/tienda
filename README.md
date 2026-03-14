@@ -31,59 +31,9 @@ El objetivo es que puedas cargar tus prendas, gestionar textos, enlaces y estilo
 
 Los productos y la configuración ya no se almacenan únicamente en `localStorage`, sino en tu proyecto de Supabase. Para funcionar sigue estos pasos:
 
-1. Entra en el panel de tu proyecto (por ejemplo la URL que compartiste) y abre la pestaña **SQL**.
-2. Ejecuta la siguiente consulta para crear las tablas necesarias:
-   ```sql
-   -- productos
-   create table if not exists products (
-     id uuid primary key default gen_random_uuid(),
-     name text not null,
-     price numeric not null,
-     description text,
-     images jsonb not null default '[]'::jsonb,
-     sizes jsonb not null default '[]'::jsonb,
-     colors jsonb not null default '[]'::jsonb,
-     category text,
-     featured boolean not null default false,
-     createdAt timestamptz not null default now()
-   );
-
-   -- configuración de la tienda (una sola fila)
-   create table if not exists settings (
-     id text primary key default 'default',
-     whatsappNumber text,
-     instagramUrl text,
-     facebookUrl text,
-     shippingCost numeric,
-     storeName text,
-     heroTitle text,
-     heroSubtitle text,
-     backgroundImage text,
-     backgroundColor text,
-     accentColor text,
-     bannerText text
-   );
-   insert into settings (id) values ('default') on conflict do nothing;
-   ```
-
-3. **Importante – políticas RLS:** Sin esto, los clientes no ven productos (el catálogo queda vacío). En la misma pestaña **SQL** de Supabase ejecuta también:
-   ```sql
-   -- Permitir que cualquiera (incluidos clientes anónimos) pueda LEER productos y configuración
-   alter table products enable row level security;
-   alter table settings enable row level security;
-
-   create policy "Permitir leer productos" on products for select using (true);
-   create policy "Permitir crear productos" on products for insert with check (true);
-   create policy "Permitir actualizar productos" on products for update using (true);
-   create policy "Permitir borrar productos" on products for delete using (true);
-
-   create policy "Permitir leer settings" on settings for select using (true);
-   create policy "Permitir insertar settings" on settings for insert with check (true);
-   create policy "Permitir actualizar settings" on settings for update using (true);
-   ```
-   Así la web (Vercel y local) puede leer y escribir en `products` y `settings` con la clave anónima.
-
-4. Asegúrate de que las variables de entorno `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` estén definidas en Vercel (y en tu `.env` local).
+1. Entra en el panel de tu proyecto en Supabase y abre **SQL Editor** → **New query**.
+2. Copia y pega **todo** el contenido del archivo **`supabase-setup.sql`** del repositorio y pulsa **Run**. Ese script crea las tablas `products` y `settings` y configura las políticas RLS para que los clientes vean el catálogo. Si ya creaste las tablas antes, el script no las borra; solo añade lo que falte.
+3. Asegúrate de que las variables de entorno `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` estén definidas en Vercel (y en tu `.env` local).
 
 Desde la aplicación, los métodos `addProduct`, `updateProduct`, `deleteProduct` y `updateSettings` se comunicarán con Supabase; al cargar la tienda se hace un `select` automático.
 
